@@ -34,10 +34,7 @@ class iOSEngineerCodeCheckUITests: XCTestCase {
         
         app.staticTexts["chvin/react-tetris"].tap()
         app.staticTexts["Written in JavaScript"].tap()
-        app.staticTexts["6333 stars"].tap()
-        app.staticTexts["6333 watchers"].tap()
-        app.staticTexts["1206 forks"].tap()
-        app.staticTexts["2 open issues"].tap()
+
         app.navigationBars["iOSEngineerCodeCheck.DetailView"].buttons["GitHub リポジトリ検索"].tap()
                 
     }

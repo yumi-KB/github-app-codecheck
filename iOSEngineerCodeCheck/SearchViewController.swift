@@ -13,8 +13,6 @@ class SearchViewController: UIViewController {
     var repositories: [[String: Any]] = []
     
     var task: URLSessionTask?
-    var searchWord: String!
-    var url: String!
     var index: Int!
     
     override func viewDidLoad() {
@@ -23,6 +21,7 @@ class SearchViewController: UIViewController {
         setupSearchController()
     }
     
+    // MARK: Private Methods
     private func setupSearchController() {
         
         searchController = UISearchController(searchResultsController: nil)
@@ -46,7 +45,7 @@ class SearchViewController: UIViewController {
         
         searchController.searchBar.delegate = self
     }
-
+    
 }
 
 // MARK: - SearchBarDelegate
@@ -55,25 +54,39 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         return true
     }
-
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // searchBar.textが編集され検索ボタンが押された時、URLSessionが行われていればキャンセルする
         task?.cancel()
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-
-        searchWord = searchBar.text!
-
-        if searchWord.count != 0 {
-            url = "https://api.github.com/search/repositories?q=\(searchWord!)"
-            task = URLSession.shared.dataTask(with: URL(string: url)!) { (data, res, err) in
-                if let object = try! JSONSerialization.jsonObject(with: data!) as? [String: Any] {
-                    if let items = object["items"] as? [[String: Any]] {
+        
+        if let searchWord = searchBar.text {
+            
+            let url = "https://api.github.com/search/repositories"
+            let queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
+            
+            guard var components = URLComponents(string: url) else { return }
+            components.queryItems = queryItems
+            guard let requestURL = components.url else { return }
+            
+            task = URLSession.shared.dataTask(with: requestURL) { (data, res, err) in
+                guard let data = data else {
+                    print("error")
+                    return
+                }
+                do {
+                    let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                    
+                    if let items = object?["items"] as? [[String: Any]] {
                         self.repositories = items
                         DispatchQueue.main.async {
                             self.tableView.reloadData()
                         }
                     }
+                } catch {
+                    print("error")
                 }
             }
             // リストの更新

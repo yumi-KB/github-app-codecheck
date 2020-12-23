@@ -103,12 +103,13 @@ extension SearchViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
+        let repositoryCell = tableView.dequeueReusableCell(withIdentifier: "Repository", for: indexPath)
+
         let repository = repositories[indexPath.row]
-        cell.textLabel?.text = repository["full_name"] as? String ?? ""
-        cell.detailTextLabel?.text = repository["language"] as? String ?? ""
-        cell.tag = indexPath.row
-        return cell
+        repositoryCell.textLabel?.text = repository["full_name"] as? String ?? ""
+        repositoryCell.detailTextLabel?.text = repository["language"] as? String ?? ""
+        repositoryCell.tag = indexPath.row
+        return repositoryCell
     }
 }
 
@@ -122,7 +123,7 @@ extension SearchViewController: UITableViewDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
-            let detailViewController = segue.destination as! DetailViewController
+            guard let detailViewController = segue.destination as? DetailViewController else { return }
             detailViewController.searchViewController = self
         }
     }

@@ -44,9 +44,6 @@
                                                 </label>
                                             </subviews>
                                         </tableViewCellContentView>
-                                        <connections>
-                                            <segue destination="AHY-RL-7mG" kind="show" identifier="showDetail" id="ejV-fJ-sQo"/>
-                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
@@ -63,6 +60,7 @@
                     <navigationItem key="navigationItem" id="enJ-Zd-Wfx"/>
                     <connections>
                         <outlet property="tableView" destination="uAQ-CB-v9i" id="Zpm-Mr-Mjw"/>
+                        <segue destination="AHY-RL-7mG" kind="show" identifier="showDetail" id="fZn-gA-cZZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="neH-Qh-O33" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

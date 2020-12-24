@@ -10,10 +10,10 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     private var searchController: UISearchController!
     
-    var repositories: [[String: Any]] = []
+    var repositories: [Repository] = []
     
     var task: URLSessionTask?
-    var index: Int!
+    var index: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,7 +45,6 @@ class SearchViewController: UIViewController {
         
         searchController.searchBar.delegate = self
     }
-    
 }
 
 // MARK: - SearchBarDelegate
@@ -56,7 +55,7 @@ extension SearchViewController: UISearchBarDelegate {
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // searchBar.textが編集され検索ボタンが押された時、URLSessionが行われていればキャンセルする
+        // URLSessionキャンセル
         task?.cancel()
     }
     
@@ -72,24 +71,30 @@ extension SearchViewController: UISearchBarDelegate {
             guard let requestURL = components.url else { return }
             
             task = URLSession.shared.dataTask(with: requestURL) { (data, res, err) in
-                guard let data = data else {
-                    print("error")
+                if let err = err {
+                    print("error: \(err.localizedDescription)\n")
+                    return
+                }
+                guard let data = data, let res = res as? HTTPURLResponse else {
+                    print("response error")
                     return
                 }
                 do {
-                    let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-                    
-                    if let items = object?["items"] as? [[String: Any]] {
+                    let decoder = JSONDecoder()
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    let object = try decoder.decode(Result.self, from: data)
+                    print(object)
+                    if let items = object.items {
                         self.repositories = items
                         DispatchQueue.main.async {
                             self.tableView.reloadData()
                         }
                     }
                 } catch {
-                    print("error")
+                    print("parse error")
                 }
             }
-            // リストの更新
+            // URLSession開始
             task?.resume()
         }
     }
@@ -104,10 +109,10 @@ extension SearchViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let repositoryCell = tableView.dequeueReusableCell(withIdentifier: "Repository", for: indexPath)
-
+        
         let repository = repositories[indexPath.row]
-        repositoryCell.textLabel?.text = repository["full_name"] as? String ?? ""
-        repositoryCell.detailTextLabel?.text = repository["language"] as? String ?? ""
+        repositoryCell.textLabel?.text = repository.fullName
+        repositoryCell.detailTextLabel?.text = repository.language
         repositoryCell.tag = indexPath.row
         return repositoryCell
     }

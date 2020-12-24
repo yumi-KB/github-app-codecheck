@@ -24,6 +24,7 @@ class iOSEngineerCodeCheckUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
+        XCTContext.runActivity(named: "API通信を行いデータが取得・表示できるか確認") { (activity) in
         app.searchFields["リポジトリ名を入力"].tap()
         app.typeText("tetris")
         app/*@START_MENU_TOKEN@*/.buttons["Search"]/*[[".keyboards",".buttons[\"検索\"]",".buttons[\"Search\"]"],[[[-1,2],[-1,1],[-1,0,1]],[[-1,2],[-1,1]]],[0]]@END_MENU_TOKEN@*/.tap()
@@ -34,9 +35,10 @@ class iOSEngineerCodeCheckUITests: XCTestCase {
         
         app.staticTexts["chvin/react-tetris"].tap()
         app.staticTexts["Written in JavaScript"].tap()
-
+        let avatarImage = app.images["avatarUrl"]
+            
         app.navigationBars["iOSEngineerCodeCheck.DetailView"].buttons["GitHub リポジトリ検索"].tap()
-                
+        }
     }
 
     func testLaunchPerformance() throws {

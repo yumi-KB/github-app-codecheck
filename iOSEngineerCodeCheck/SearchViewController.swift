@@ -21,9 +21,47 @@ class SearchViewController: UIViewController {
         setupSearchController()
     }
     
+    // MARK: Methods
+    func setTableData(json: Result) {
+        if let items = json.items {
+            self.repositories = items
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+    }
+    
+    func apiRequest(url: String, query queryItems: [URLQueryItem]? = nil) {
+        guard var components = URLComponents(string: url) else { return }
+        components.queryItems = queryItems
+        guard let requestURL = components.url else { return }
+        
+        task = URLSession.shared.dataTask(with: requestURL) { (data, res, err) in
+            if let err = err {
+                print("error: \(err.localizedDescription)\n")
+                return
+            }
+            guard let data = data, let _ = res as? HTTPURLResponse else {
+                print("response error")
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let object = try decoder.decode(Result.self, from: data)
+                
+                self.setTableData(json: object)
+                
+            } catch {
+                print("parse error")
+            }
+        }
+        // URLSession開始
+        task?.resume()
+    }
+    
     // MARK: Private Methods
     private func setupSearchController() {
-        
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.placeholder = "リポジトリ名を入力"
         searchController.obscuresBackgroundDuringPresentation = false
@@ -45,6 +83,12 @@ class SearchViewController: UIViewController {
         
         searchController.searchBar.delegate = self
     }
+    
+    private func setRepositoryCell(cell repositoryCell: UITableViewCell, repository: Repository, tag: Int) {
+        repositoryCell.textLabel?.text = repository.fullName
+        repositoryCell.detailTextLabel?.text = repository.language
+        repositoryCell.tag = tag
+    }
 }
 
 // MARK: - SearchBarDelegate
@@ -60,45 +104,12 @@ extension SearchViewController: UISearchBarDelegate {
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        
         if let searchWord = searchBar.text {
-            
             let url = "https://api.github.com/search/repositories"
             let queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
-            
-            guard var components = URLComponents(string: url) else { return }
-            components.queryItems = queryItems
-            guard let requestURL = components.url else { return }
-            
-            task = URLSession.shared.dataTask(with: requestURL) { (data, res, err) in
-                if let err = err {
-                    print("error: \(err.localizedDescription)\n")
-                    return
-                }
-                guard let data = data, let res = res as? HTTPURLResponse else {
-                    print("response error")
-                    return
-                }
-                do {
-                    let decoder = JSONDecoder()
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    let object = try decoder.decode(Result.self, from: data)
-                    print(object)
-                    if let items = object.items {
-                        self.repositories = items
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                        }
-                    }
-                } catch {
-                    print("parse error")
-                }
-            }
-            // URLSession開始
-            task?.resume()
+            apiRequest(url: url, query: queryItems)
         }
     }
-    
 }
 
 // MARK: - TableViewDataSource
@@ -111,9 +122,7 @@ extension SearchViewController: UITableViewDataSource {
         let repositoryCell = tableView.dequeueReusableCell(withIdentifier: "Repository", for: indexPath)
         
         let repository = repositories[indexPath.row]
-        repositoryCell.textLabel?.text = repository.fullName
-        repositoryCell.detailTextLabel?.text = repository.language
-        repositoryCell.tag = indexPath.row
+        setRepositoryCell(cell: repositoryCell, repository: repository, tag: indexPath.row)
         return repositoryCell
     }
 }

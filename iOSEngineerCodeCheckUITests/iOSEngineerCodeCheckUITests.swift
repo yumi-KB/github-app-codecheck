@@ -35,7 +35,7 @@ class iOSEngineerCodeCheckUITests: XCTestCase {
         
         app.staticTexts["chvin/react-tetris"].tap()
         app.staticTexts["Written in JavaScript"].tap()
-        let avatarImage = app.images["avatarUrl"]
+        let _ = app.images["avatarUrl"]
             
         app.navigationBars["iOSEngineerCodeCheck.DetailView"].buttons["GitHub リポジトリ検索"].tap()
         }

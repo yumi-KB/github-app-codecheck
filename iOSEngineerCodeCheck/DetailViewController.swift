@@ -18,19 +18,24 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var forksLabel: UILabel!
     @IBOutlet weak var issuesLabel: UILabel!
     
-    var searchViewController: SearchViewController!
+    weak var searchViewController: SearchViewController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         let repository = searchViewController.repositories[searchViewController.index]
         
+        setDetailView(repository: repository)
+        setImage(repository: repository)
+    }
+    
+    // MARK: Methods
+    func setDetailView(repository: Repository) {
         languageLabel.text = "Written in \(repository.language ?? "")"
         starsLabel.text = "\(repository.stargazersCount ?? 0) stars"
         watchersLabel.text = "\(repository.watchersCount ?? 0) watchers"
         forksLabel.text = "\(repository.forksCount ?? 0) forks"
         issuesLabel.text = "\(repository.openIssuesCount ?? 0) open issues"
-        setImage(repository: repository)
     }
     
     func setImage(repository: Repository) {
@@ -39,7 +44,7 @@ class DetailViewController: UIViewController {
         guard let owner = repository.owner else { return }
         guard let imageURL = URL(string: owner.avatarUrl ?? "") else { return }
         URLSession.shared.dataTask(with: imageURL) { (data, res, err) in
-            guard let data = data, let res = res as? HTTPURLResponse else {
+            guard let data = data, let _ = res as? HTTPURLResponse else {
                 print("response error")
                 return
             }

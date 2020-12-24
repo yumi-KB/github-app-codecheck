@@ -23,8 +23,10 @@ class iOSEngineerCodeCheckTests: XCTestCase {
     // apiRequest関数に正しいurlとqueryを渡すとレスポンスが返り値が格納されるのを確認
     func testApiRequest() {
         let vc = SearchViewController()
-        vc.apiRequest(url: "https://api.github.com/search/repositories", query: [URLQueryItem(name: "q", value: "tetris")])
-        XCTAssertNotNil(vc.repositories)
+        vc.apiRequest(url: "https://api.github.com/search/repositories", query: [URLQueryItem(name: "q", value: "tetris")], completion: {
+            
+            XCTAssertNotNil(vc.repositories)
+        })
     }
     
 //    func testPerformanceExample() throws {

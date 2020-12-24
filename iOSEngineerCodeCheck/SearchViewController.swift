@@ -10,6 +10,10 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     private var searchController: UISearchController!
     
+    let url = "https://api.github.com/search/repositories"
+    var queryItems: [URLQueryItem] = []
+    var pageCount = 2
+    
     var repositories: [Repository] = []
     
     var task: URLSessionTask?
@@ -24,14 +28,14 @@ class SearchViewController: UIViewController {
     // MARK: Methods
     func setTableData(json: Result) {
         if let items = json.items {
-            self.repositories = items
+            self.repositories.append(contentsOf: items)
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
         }
     }
     
-    func apiRequest(url: String, query queryItems: [URLQueryItem]? = nil) {
+    func apiRequest(url: String, query queryItems: [URLQueryItem]? = nil, completion: @escaping() -> Void) {
         guard var components = URLComponents(string: url) else { return }
         components.queryItems = queryItems
         guard let requestURL = components.url else { return }
@@ -51,6 +55,7 @@ class SearchViewController: UIViewController {
                 let object = try decoder.decode(Result.self, from: data)
                 
                 self.setTableData(json: object)
+                completion()
                 
             } catch {
                 print("parse error")
@@ -105,9 +110,12 @@ extension SearchViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if let searchWord = searchBar.text {
-            let url = "https://api.github.com/search/repositories"
-            let queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
-            apiRequest(url: url, query: queryItems)
+            // 初期化
+            pageCount = 2
+            repositories = []
+            queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
+            // APIリクエスト
+            apiRequest(url: url, query: queryItems, completion: {})
         }
     }
 }
@@ -129,6 +137,18 @@ extension SearchViewController: UITableViewDataSource {
 
 // MARK: - TableViewDelegate
 extension SearchViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row + 1 == repositories.count {
+            // クエリの追加
+            var queryItemsAddPage = queryItems
+            queryItemsAddPage.append(URLQueryItem(name: "page", value: "\(pageCount)"))
+            // APIリクエスト
+            apiRequest(url: url, query: queryItemsAddPage, completion: {
+                self.pageCount += 1
+            })
+        }
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // 画面遷移時に呼ばれる
         index = indexPath.row

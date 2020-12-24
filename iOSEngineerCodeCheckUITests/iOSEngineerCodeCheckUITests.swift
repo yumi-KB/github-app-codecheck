@@ -21,9 +21,12 @@ class iOSEngineerCodeCheckUITests: XCTestCase {
 
     func testExample() throws {
         // UI tests must launch the application that they test.
+        
+        // launch
         let app = XCUIApplication()
         app.launch()
 
+        // segue test
         XCTContext.runActivity(named: "API通信を行いデータが取得・表示できるか確認") { (activity) in
         app.searchFields["リポジトリ名を入力"].tap()
         app.typeText("tetris")
@@ -39,6 +42,10 @@ class iOSEngineerCodeCheckUITests: XCTestCase {
             
         app.navigationBars["iOSEngineerCodeCheck.DetailView"].buttons["GitHub リポジトリ検索"].tap()
         }
+        
+        // scroll test
+        //app.swipeUp(velocity: 10000)
+        
     }
 
     func testLaunchPerformance() throws {

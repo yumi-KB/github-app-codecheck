@@ -21,7 +21,7 @@ Swift language version uspecified
 量が多いとスクロールがしんどいので、本当は横にページングする方が良さそうとは思いました(思っただけ)
 
 ## UI
-searchBarをsearchControllerに変更しました。かなり便利ですね。
+searchBarをsearchControllerに変更しました。かなり便利ですね。[参考：https://dev.classmethod.jp/articles/ios-11-uinavigationitem-searchcontroller/]
 
 リポジトリの詳細表示画面にscrollViewを導入しました。
 

@@ -53,16 +53,13 @@ class DetailViewController: UIViewController {
             }
             guard let data = data, let _ = res as? HTTPURLResponse else {
                 print("response error")
-                MBProgressHUD.hide(for: self.view, animated: true)
                 return
             }
             guard let image = UIImage(data: data) else {
-                MBProgressHUD.hide(for: self.view, animated: true)
                 return
             }
             DispatchQueue.main.async {
                 self.imageView.image = image
-                MBProgressHUD.hide(for: self.view, animated: true)
             }
         }.resume()
     }

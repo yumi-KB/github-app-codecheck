@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class DetailViewController: UIViewController {
     
@@ -19,6 +20,7 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var issuesLabel: UILabel!
     
     weak var searchViewController: SearchViewController!
+    var hud = MBProgressHUD()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,14 +45,24 @@ class DetailViewController: UIViewController {
         
         guard let owner = repository.owner else { return }
         guard let imageURL = URL(string: owner.avatarUrl ?? "") else { return }
+        hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        
         URLSession.shared.dataTask(with: imageURL) { (data, res, err) in
+            DispatchQueue.main.async {
+                MBProgressHUD.hide(for: self.view, animated: true)
+            }
             guard let data = data, let _ = res as? HTTPURLResponse else {
                 print("response error")
+                MBProgressHUD.hide(for: self.view, animated: true)
                 return
             }
-            guard let image = UIImage(data: data) else { return }
+            guard let image = UIImage(data: data) else {
+                MBProgressHUD.hide(for: self.view, animated: true)
+                return
+            }
             DispatchQueue.main.async {
                 self.imageView.image = image
+                MBProgressHUD.hide(for: self.view, animated: true)
             }
         }.resume()
     }

@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class SearchViewController: UIViewController {
     
@@ -19,6 +20,8 @@ class SearchViewController: UIViewController {
     
     var task: URLSessionTask?
     var index: Int = 0
+    
+    //var hud = MBProgressHUD()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,7 +72,6 @@ class SearchViewController: UIViewController {
 
 // MARK: - SearchBarDelegate
 extension SearchViewController: UISearchBarDelegate {
-    
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         return true
     }
@@ -87,6 +89,7 @@ extension SearchViewController: UISearchBarDelegate {
             queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
             
             // APIリクエスト
+            //hud = MBProgressHUD.showAdded(to: self.view, animated: true)
             let api = APIClient(queryItems: queryItems)
             guard let requestUrl = api.getRequestURL() else { return }
             api.request(url: requestUrl, completion: { object in
@@ -120,6 +123,7 @@ extension SearchViewController: UITableViewDelegate {
             queryItemsAddPage.append(URLQueryItem(name: "page", value: "\(pageCount)"))
             
             // APIリクエスト
+            //hud = MBProgressHUD.showAdded(to: self.view, animated: true)
             let api = APIClient(queryItems: queryItemsAddPage)
             guard let requestUrl = api.getRequestURL() else { return }
             api.request(url: requestUrl, completion: { object in

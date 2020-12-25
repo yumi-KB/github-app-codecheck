@@ -135,6 +135,7 @@ extension SearchViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // 画面遷移時に呼ばれる
+        searchController.searchBar.resignFirstResponder()
         index = indexPath.row
         performSegue(withIdentifier: "showDetail", sender: self)
     }

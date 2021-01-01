@@ -32,7 +32,7 @@ class DetailViewController: UIViewController {
     }
     
     // MARK: Methods
-    func setDetailView(repository: Repository) {
+    private func setDetailView(repository: Repository) {
         languageLabel.text = "Written in \(repository.language ?? "")"
         starsLabel.text = "\(repository.stargazersCount ?? 0) stars"
         watchersLabel.text = "\(repository.watchersCount ?? 0) watchers"
@@ -40,7 +40,7 @@ class DetailViewController: UIViewController {
         issuesLabel.text = "\(repository.openIssuesCount ?? 0) open issues"
     }
     
-    func setImage(repository: Repository) {
+    private func setImage(repository: Repository) {
         tableLabel.text = repository.fullName
         
         guard let owner = repository.owner else { return }

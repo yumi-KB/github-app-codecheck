@@ -6,8 +6,6 @@ class APIClient {
     let url = "https://api.github.com/search/repositories"
     let queryItems: [URLQueryItem]
     
-    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-    
     
     // MARK: Initialization
     

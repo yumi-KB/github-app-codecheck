@@ -1,4 +1,8 @@
 # 株式会社ゆめみ iOS エンジニアコードチェック課題
+2021/01/01  修正
+
+2020/12/25  課題提出
+
 ## 動作環境
 
 Xcode Version 12.3
@@ -7,34 +11,25 @@ iOS Deployment Target iOS 13.4
 
 Swift language version uspecified
 
-使用ライブラリ: MBProgressHUD
+使用ライブラリ: MBProgressHUD [https://github.com/jdg/MBProgressHUD]
 
-## テスト
-テストはあまり書いたことがなかったのですが、簡単にXCUnitTestとUITestを書いてみました。
+## #10 テストの追加
+簡単なXCUnitTestとXCUITestを追加しました。
 
-とりあえずテストを触ってみようというのを目標に書いたので、テストとしての機能は不十分だとは思います。
-特にUITestで自動で文字が入力されてアプリが自動で動いていくさまは衝撃的でした。見てて面白いです。
+## #9 新機能の追加/ #8 UIのブラッシュアップ
+1. 検索結果を最下部までスクロールすると、追加のAPI通信を行い、続きの結果を表示する機能を追加しました。
+2. API通信を行っている間、indicatorを表示する機能を追加しました。  検索時、追加のデータを読み込む時、詳細画面で画像URLを読み込む時に表示されます。
+3. searchBarをsearchControllerに変更しました。 searchControllerの機能を使用して、スクロール時はsearchBarが隠れるようにしました。 参考サイト: [https://dev.classmethod.jp/articles/ios-11-uinavigationitem-searchcontroller/]
+4. リポジトリの詳細表示画面にscrollViewを導入しました。  iPadで横に倒した状態ではページ全体を確認することができませんでしたので、通常のViewをscrollViewに置き換えることで改善させました。
 
-## 新機能
-検索結果の最下部までスクロールすると、続きの検索結果を表示する機能を追加しました。
-
-量が多いとスクロールがしんどいので、本当は横にページングする方が良さそうとは思いました(思っただけ)
-
-## UI
-searchBarをsearchControllerに変更しました。かなり便利ですね。[参考：https://dev.classmethod.jp/articles/ios-11-uinavigationitem-searchcontroller/]
-
-リポジトリの詳細表示画面にscrollViewを導入しました。
-
-## アーキテクチャ: MVC
+## #7 アーキテクチャを適用： MVC / #5 FatVCの回避
 主にAPI通信のコードをモデルとしてVCから切り離しました。
 
-クラスをとりあえず作ったのですが、非同期通信やクロージャの扱いが難しく理解できていないところも多いです。
+## #6 リファクタリング
+命名規則として、値を格納する関数には先頭にsetを、値を取得して返す関数には先頭にgetをつけました。
 
-・weakで循環参照を防ぐ、メモリリークを防ぐこと
-
-・HUD(特に閉じる時)やエラーアラートの表示のタイミング
-
-この辺もあまり理解できていません。
+## #3 ソースコードの安全性の向上
+オプショナルバインディングの使用や初期値を設定し極力nilを入れないようにし、強制アンラップを多用しないコードに変更しました。
 
 
 ## 他

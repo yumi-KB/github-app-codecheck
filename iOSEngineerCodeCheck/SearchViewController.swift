@@ -12,16 +12,23 @@ class SearchViewController: UIViewController {
     private var searchController: UISearchController!
     
     // MARK: Properties
+    
+    /// API通信に関するプロパティ
     let url = "https://api.github.com/search/repositories"
     var queryItems: [URLQueryItem] = []
     var pageCount = 2
     
+    /// 取得したリポジトリ一覧を格納
     var repositories: [Repository] = []
     
     var task: URLSessionTask?
     var index: Int = 0
     
-    //var hud = MBProgressHUD()
+    /// 検索用のIndicator
+    var hud = MBProgressHUD()
+    /// テーブル最下部読み込み時の Indicator
+    var indicator: UIActivityIndicatorView! = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.medium)
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,6 +38,7 @@ class SearchViewController: UIViewController {
     
     
     // MARK: Private Methods
+    
     private func setTableData(_ json: Result) {
         if let items = json.items {
             repositories.append(contentsOf: items)
@@ -56,8 +64,6 @@ class SearchViewController: UIViewController {
             // UISearchControllerをUINavigationItemのsearchControllerプロパティにセットする。
             navigationItem.searchController = searchController
             
-            // trueだとスクロールした時にSearchBarを隠す（デフォルトはtrue）
-            // falseだとスクロール位置に関係なく常にSearchBarが表示される
             navigationItem.hidesSearchBarWhenScrolling = true
         } else {
             tableView.tableHeaderView = searchController.searchBar
@@ -71,35 +77,45 @@ class SearchViewController: UIViewController {
 }
 
 // MARK: - SearchBarDelegate
+
 extension SearchViewController: UISearchBarDelegate {
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         return true
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // URLSessionキャンセル
+        /// URLSessionをキャンセル
         task?.cancel()
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if let searchWord = searchBar.text {
-            // 初期化
-            pageCount = 2
+            /// クエリとデータを格納する配列の初期化
             repositories = []
+            pageCount = 2
             queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
             
-            // APIリクエスト
-            //hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+            /// APIリクエスト
             let api = APIClient(queryItems: queryItems)
             guard let requestUrl = api.getRequestURL() else { return }
+            
+            hud = MBProgressHUD.showAdded( to: self.view, animated: true)
+            hud.label.text = "Searching..."
+            
             api.request(url: requestUrl, completion: { object in
                 self.setTableData(object)
+                
+                DispatchQueue.main.async {
+                    MBProgressHUD.hide(for: self.view, animated: true)
+                }
             })
+                
         }
     }
 }
 
 // MARK: - TableViewDataSource
+
 extension SearchViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return repositories.count
@@ -115,27 +131,41 @@ extension SearchViewController: UITableViewDataSource {
 }
 
 // MARK: - TableViewDelegate
+
 extension SearchViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        /// テーブル最下部を読み込むと次のAPIリクエストを取得する
         if indexPath.row + 1 == repositories.count {
-            // クエリの追加
+            /// Indicator 表示開始
+            indicator.startAnimating()
+            indicator.center = self.view.center
+            self.view.addSubview(indicator)
+            
+            /// クエリの追加
             var queryItemsAddPage = queryItems
             queryItemsAddPage.append(URLQueryItem(name: "page", value: "\(pageCount)"))
             
-            // APIリクエスト
-            //hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+            /// API リクエスト
             let api = APIClient(queryItems: queryItemsAddPage)
             guard let requestUrl = api.getRequestURL() else { return }
+            
             api.request(url: requestUrl, completion: { object in
                 self.setTableData(object)
                 self.pageCount += 1
+                
+                DispatchQueue.main.async {
+                    /// Indicator 表示終了
+                    self.indicator.stopAnimating()
+                    self.indicator.hidesWhenStopped = true
+                }
             })
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // 画面遷移時に呼ばれる
         searchController.searchBar.resignFirstResponder()
+        /// 画面遷移時に使用するプロパティ
         index = indexPath.row
         performSegue(withIdentifier: "showDetail", sender: self)
     }

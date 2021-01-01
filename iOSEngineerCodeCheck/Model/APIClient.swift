@@ -7,19 +7,18 @@ class APIClient {
     let queryItems: [URLQueryItem]
     
     let storyboard = UIStoryboard(name: "Main", bundle: nil)
-    //weak var searchViewController: SearchViewController?
     
-    var hud = MBProgressHUD()
     
     // MARK: Initialization
+    
     init(queryItems: [URLQueryItem]) {
         self.queryItems = queryItems
-        
-        //self.searchViewController = storyboard.instantiateViewController(withIdentifier: "SearchViewController") as? SearchViewController
     }
     
     // MARK: Methods
+    
     func getRequestURL() -> URL? {
+        
         guard var components = URLComponents(string: url) else { return nil }
         components.queryItems = self.queryItems
         guard let requestURL = components.url else { return nil }
@@ -27,12 +26,11 @@ class APIClient {
     }
     
     func request(url: URL, completion: @escaping(Result) -> Void) {
+        
         var requestUrl = URLRequest(url: url)
         requestUrl.timeoutInterval = 10
         
-        let task = URLSession.shared.dataTask(with: requestUrl) { (data, res, err) in                //DispatchQueue.main.async {
-            //MBProgressHUD.hide(for: self.searchViewController!.view, animated: true)
-            //}
+        let task = URLSession.shared.dataTask(with: requestUrl) { (data, res, err) in 
             if let err = err {
                 print("error: \(err.localizedDescription)\n")
                 return
@@ -52,7 +50,7 @@ class APIClient {
                 return
             }
         }
-        // URLSession開始
+        /// URLSession開始
         task.resume()
     }
 }

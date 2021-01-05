@@ -22,7 +22,7 @@ class APIClient {
         return requestURL
     }
     
-    func request(url: URL, completion: @escaping(Result) -> Void) {
+    func request(url: URL, completion: @escaping(Result?) -> Void) {
         
         var requestUrl = URLRequest(url: url)
         requestUrl.timeoutInterval = 10
@@ -30,10 +30,11 @@ class APIClient {
         let task = URLSession.shared.dataTask(with: requestUrl) { (data, res, err) in 
             if let err = err {
                 print("error: \(err.localizedDescription)\n")
-                return
+                completion(nil)
             }
             guard let data = data, let _ = res as? HTTPURLResponse else {
                 print("response error")
+                completion(nil)
                 return
             }
             do {
@@ -44,7 +45,7 @@ class APIClient {
                 
             } catch {
                 print("parse error")
-                return
+                completion(nil)
             }
         }
         /// URLSession開始

@@ -17,5 +17,6 @@ struct Repository: Codable {
 }
 
 struct Result: Codable {
+    let totalCount: Int?
     let items: [Repository]?
 }

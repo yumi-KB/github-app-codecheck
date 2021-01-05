@@ -12,6 +12,7 @@ class SearchViewController: UIViewController {
     let url = "https://api.github.com/search/repositories"
     var queryItems: [URLQueryItem] = []
     var pageCount = 2
+    var totalCount = 0
     
     /// 取得したリポジトリ一覧を格納
     var repositories: [Repository] = []
@@ -37,6 +38,7 @@ class SearchViewController: UIViewController {
     private func setTableData(_ json: Result) {
         if let items = json.items {
             repositories.append(contentsOf: items)
+            
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -55,14 +57,10 @@ class SearchViewController: UIViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         
         navigationItem.title = "GitHub リポジトリ検索"
-        if #available(iOS 11.0, *) {
-            // UISearchControllerをUINavigationItemのsearchControllerプロパティにセットする。
-            navigationItem.searchController = searchController
-            
-            navigationItem.hidesSearchBarWhenScrolling = true
-        } else {
-            tableView.tableHeaderView = searchController.searchBar
-        }
+        navigationItem.searchController = searchController
+        
+        navigationItem.hidesSearchBarWhenScrolling = true
+
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -90,18 +88,25 @@ extension SearchViewController: UISearchBarDelegate {
             pageCount = 2
             queryItems = [URLQueryItem(name: "q", value: "\(searchWord)")]
             
+            /// Indicator 表示開始
+            hud = MBProgressHUD.showAdded( to: self.view, animated: true)
+            hud.label.text = "Searching..."
+            
             /// APIリクエスト
             let api = APIClient(queryItems: queryItems)
             guard let requestUrl = api.getRequestURL() else { return }
             
-            hud = MBProgressHUD.showAdded( to: self.view, animated: true)
-            hud.label.text = "Searching..."
-            
             api.request(url: requestUrl, completion: { object in
-                self.setTableData(object)
-                
+                /// Indicator 表示終了
                 DispatchQueue.main.async {
                     MBProgressHUD.hide(for: self.view, animated: true)
+                }
+                
+                if let object = object {
+                    self.totalCount = object.totalCount ?? 0
+                    self.setTableData(object)
+                } else {
+                    print("error")
                 }
             })
                 
@@ -132,6 +137,9 @@ extension SearchViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         /// テーブル最下部を読み込むと次のAPIリクエストを取得する
         if indexPath.row + 1 == repositories.count {
+            if repositories.count == totalCount {
+                return
+            }
             /// Indicator 表示開始
             indicator.startAnimating()
             indicator.center = self.view.center
@@ -146,13 +154,17 @@ extension SearchViewController: UITableViewDelegate {
             guard let requestUrl = api.getRequestURL() else { return }
             
             api.request(url: requestUrl, completion: { object in
-                self.setTableData(object)
-                self.pageCount += 1
-                
+                /// Indicator 表示終了
                 DispatchQueue.main.async {
-                    /// Indicator 表示終了
                     self.indicator.stopAnimating()
                     self.indicator.hidesWhenStopped = true
+                }
+                
+                if let object = object {
+                    self.setTableData(object)
+                    self.pageCount += 1
+                } else {
+                    print("error")
                 }
             })
         }
